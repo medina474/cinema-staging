@@ -1,0 +1,97 @@
+name: cinema
+
+services:
+
+  studio:
+    container_name: cinema-studio
+
+  kong:
+    container_name: cinema-gateway
+
+  auth:
+    container_name: cinema-auth
+
+  rest:
+    container_name: cinema-rest
+
+  realtime:
+    container_name: realtime-dev.cinema-realtime
+
+  storage:
+    container_name: cinema-storage
+
+  imgproxy:
+    container_name: cinema-imgproxy
+
+  meta:
+    container_name: cinema-meta
+
+  functions:
+    container_name: cinema-edge-functions
+
+  analytics:
+    container_name: cinema-analytics
+
+  db:
+    container_name: cinema-postgresql
+
+  vector:
+    container_name: cinema-vector
+
+  mail:
+    container_name: cinema-mail
+    image: inbucket/inbucket
+    volumes:
+      - ./volumes/mail/:/storage/
+    ports:
+      - 9000:9000/tcp
+      - 2500:2500/tcp
+      - 1100:1100/tcp
+
+  pgadmin:
+    container_name: cinema-pgadmin
+    image: dpage/pgadmin4:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${DASHBOARD_USERNAME}
+      PGADMIN_DEFAULT_PASSWORD: ${DASHBOARD_PASSWORD}
+      PGADMIN_DISABLE_POSTFIX: true
+    volumes:
+      - ./volumes/pgadmin:/var/lib/pgadmin/
+    configs:
+      - source: pgadmin_config
+        target: /pgadmin4/servers.json
+    ports:
+      - 8001:80
+    restart: no
+
+  directus:
+    image: directus/directus:10.8
+    container_name: cinema-directus
+    ports:
+      - 8055:8055
+    volumes:
+      - ./volumes/directus/uploads:/directus/uploads
+      - ./volumes/directus/extensions:/directus/extensions
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KEY: "255d861b-5ea1-5996-9aa3-922530ec40b1"
+      SECRET: "6116487b-cda1-52c2-b5b5-c8022c45e263"
+
+      DB_CLIENT: pg
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USER: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      ADMIN_EMAIL: ${DASHBOARD_USERNAME}
+      ADMIN_PASSWORD: ${DASHBOARD_PASSWORD}
+
+configs:
+  pgadmin_config:
+    file: ./configs/pgadmin-servers.json
