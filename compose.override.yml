@@ -89,6 +89,10 @@ services:
       DB_USER: postgres
       DB_PASSWORD: ${POSTGRES_PASSWORD}
 
+      DB_SCHEMA: directus
+      DB_CUSTOM_SCHEMA: directus
+      DB_SEARCH_PATH: "array:directus,public"
+
       ADMIN_EMAIL: ${DASHBOARD_USERNAME}
       ADMIN_PASSWORD: ${DASHBOARD_PASSWORD}
 
